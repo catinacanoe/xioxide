@@ -1,11 +1,10 @@
+[https://github.com/catinacanoe/xioxide](https://github.com/catinacanoe/xioxide)
 `xioxide`, a `cd` wrapper script written by canoe, but it's extensible. In the sense that you can use it to organize and access any data that is naturally organized in a tree.
 Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
 
-[https://github.com/catinacanoe/xioxide](https://github.com/catinacanoe/xioxide)
-
 # dependencies
 
-  needs `fzf` for interactive mode, see [this section](#search-pattern)
+  Needs `fzf` for interactive mode, see [this section](#search-pattern) for more info on what that is.
 
 # installation
 
@@ -15,11 +14,11 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 
 # configuration
 
-  default config is located at `$XDG_CONFIG_HOME/xioxide/default.conf`
+  By default config is located at `$XDG_CONFIG_HOME/xioxide/default.conf`
 
 ## files and folders style
 
-   config should be formatted like this:
+   Config should be formatted like this:
    ```
    r ~/repos/
        n nix-dots/
@@ -45,6 +44,7 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
    Note that the names of the entries in the config don't have to be one char long, but having longer ones can lead to conflicts. In cases of ambiguity like this, `xioxide` will prefer the one defined earlier, so `tm` would refer to `~/Documents/tomorrow/` and not `/mnt/`, and `rn` would refer to `~/repos/nix-dots/` and not `~/Documents/rightnow/`
 
    Note:
+   - Indent size can be any number of *spaces* as long as it is kept consistent
    - It is best practise to use trailing slashes in a config like this so that it is easy to filter for files vs folders
    - No inline comments `r ~/repos/ # like this` are allowed, so you can use the `#` character in the config freely except at the start of a line
 
@@ -75,10 +75,10 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 
 # usage: reload
 
-   `xioxide reload arg`
-   Parse the configuration file `$XDG_CONFIG_HOME/xioxide/default.conf` into a more machine readable format, at `$XDG_CONFIG_HOME/xioxide/default.parsed`. `xioxide` only reads the `.parsed` file at runtime so you need to run this in order to apply changes in the config.
+   `xioxide reload [config_name]`
+   Parse the configuration file `$XDG_CONFIG_HOME/xioxide/*.conf` into a more machine readable format, at `$XDG_CONFIG_HOME/xioxide/*.parsed`. `xioxide` only reads the `.parsed` file at runtime so you need to run this in order to apply changes in the config.
 
-   If you have multiple configs, select which one to reload using a second argument. For example if you also have `$XDG_CONFIG_HOME/xioxide/other.conf` run `xioxide reload other` to parse that config into `other.parsed`.
+   Running `xioxide reload` with no arguments will parse every file in `$XDG_CONFIG_HOME/xioxide/` that matches `*.conf`. The resulting files will have the extension `.parsed` instead. If you want to reload only a specific config, pass its stem name as a second argument. So, to parse `$XDG_CONFIG_HOME/xioxide/myconf.conf`, run `xioxide reload myconf`.
 
 # usage: normal
   `xioxide <processing_cmd> <filter_cmd> <current_cmd> <config> <searchpattern> [--no-passthrough]`
@@ -107,7 +107,7 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
    If the pattern does not start with `.` `xioxide` will just search through the list of filtered items, and use the first match (passing it to the command specified in the first argument)
 
    Relative pattern:
-   If the pattern starts with `.` `xioxide` will determine the current item using the command in your third argument. Then, it will try to find an item in the filtered list that matches the output of the command (can be partial match ie `ca` matches `cat`). If it finds a match, it will take the name of the first matching item (as defined in conf), append the rest of your search pattern (whatever was after the '.'), and search the filtered list using the newly generated search pattern (same behaviour as an absolute pattern). If it does not find a match (current item is not defined in config) it will exit with an error.
+   If the pattern starts with `.` `xioxide` will determine the current item using the command in your third argument. Then, it will try to find an item in the filtered list that matches the output of the command (can be partial match from right side ie `ca` matches `cat` but `at` doesn't match `cat`). If it finds a match, it will take the name of the first matching item (as defined in conf), append the rest of your search pattern (whatever was after the '.'), and search the filtered list using the newly generated search pattern (same behaviour as an absolute pattern). If it does not find a match (current item is not defined in config) it will exit with an error.
    Example: you have defined `m /mnt/` and `mz /mnt/0/` in your config file, and are currently in the `/mnt/` directory. If you run `xioxide cd '' pwd '' .z` (the two empty strings mean: not filtering, using default config) `xioxide` will run `pwd` and get `/mnt` as output. Then it will look through your config and see that the first matching item is `m`, then it will apped `z` and get `mz`. The behaviour from here is the same as if you ran `xioxide` with `mz` as the search pattern and not `.z`, so `xioxide` will cd into /mnt/0/.
    Note:
    - If you are using `xioxide` as a cd replacement, and your `<current_cmd>` (third arg) is `pwd`, relative patterns won't seem to work right in the home directory. This is because `pwd` prints `/home/username` while you might use `~` in your config, and they won't match. To fix this, you can use `sed 's|~|/home/username|'` in your filtering command.
@@ -117,3 +117,5 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 
    Interactive:
    If you pass `''` (empty string) or `.` as your search pattern, `xioxide` will run in interactive mode. In this mode it will filter your config, and allow you to select which item to use with `fzf`. If you pass just `.`, in addition to filtering the config according to `<filter_cmd>` `xioxide` will only include items that match the current item, as defined by `<current_cmd>` in the fzf menu.
+
+vim:ft=markdown

@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
 
 case "$1" in
-    "help") cat "$XIOXIDE_PATH/help.txt" ;;
+    "help") cat "$XIOXIDE_PATH/README.md" ;;
 
-    "reload") "$XIOXIDE_PATH/reload-config.sh" ;;
+    "reload")
+	if [ -z "$2" ]; then
+	    for file in $XDG_CONFIG_HOME/xioxide/*.conf; do
+	        "$XIOXIDE_PATH/reload.sh" "$file"
+	    done
+	else
+	    "$XIOXIDE_PATH/reload.sh" "$XDG_CONFIG_HOME/xioxide/$2.conf"
+	fi
+	;;
 
-    "cd") cd "$("$XIOXIDE_PATH/xioxide.sh" "grep '/$'" "$2")" ;;
+    *)
+	XIOXIDE_OUTPUT="$("$XIOXIDE_PATH/xioxide.sh" "$2" "$3" "$4" "$5")"
 
-    "edit") cd "$("$XIOXIDE_PATH/xioxide.sh" "grep -v '/$'" "$2")" ;;
-
-    *) "$1" "$("$XIOXIDE_PATH/xioxide.sh" "$2" "$3" "$4" "$5")" ;;
-	# the first arg is the program to run on the outcome
-	# the second arg is the filter to run the list of items through
-	# the third arg is the search pattern
-	# the fourth arg is a command to get the current open item (directory)
+	if [ -n "$XIOXIDE_OUTPUT" ]; then
+	    $1 "$XIOXIDE_OUTPUT"
+	else
+	    [ "$6" == "--no-passthrough" ] && return 1 || "$1" "$5"
+	fi
+	;;
 esac
