@@ -40,5 +40,7 @@ while IFS= read -r line; do
     value="$(echo "$value" | head -n "$indent_count" && echo "$local_value")"
     value_concat="$(echo "$value" | tr -d '\n')"
 
+    echo "$indent_count | $name | $local_value"
+
     echo "$name $value_concat" >> "$outfile"
 done <<< "$config"

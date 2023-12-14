@@ -2,7 +2,11 @@
 
 case "$1" in
     "help") cat "$XIOXIDE_PATH/README.md" ;;
-
+    "config")
+	cat "$XDG_CONFIG_HOME/xioxide/$2.conf"
+	echo "---"
+	cat "$XDG_CONFIG_HOME/xioxide/$2.parsed"
+	;;
     "reload")
 	if [ -z "$2" ]; then
 	    for file in $XDG_CONFIG_HOME/xioxide/*.conf; do

@@ -29,25 +29,39 @@ absolute_pattern() {
     echo "$item_list" | greps "^$search_pattern " | head -n 1 | awk '{ print $2 }'
 }
 
-relative_pattern() {
+pattern_mk_absolute() {
     search_pattern="$(current_name)$(echo "$search_pattern" | sed 's/^.//')"
-    absolute_pattern
 }
 
-absolute_interactive() {
-    echo "$item_list" | fzf | awk '{ print $2 }'
+interactive() {
+    echo "$item_list" | sed "s|/home/$(whoami)|~|" |fzf | awk '{ print $2 }'
 }
 
-relative_interactive() {
-    echo "$item_list" | greps "^$(current_name)" | sed "s|$(current)|.|" | fzf | awk '{ print $2 }'
+list_mk_relative() {
+    if [ -z "$2" ]; then
+        item_list="$(echo "$item_list" | greps "^$1")"
+    else
+        item_list="$(echo "$item_list" | greps "^$1" | sed "s|$2/||")"
+    fi
 }
+
+[ "$search_pattern" == ".." ] && exit
 
 if [ -z "$search_pattern" ]; then
-    absolute_interactive
+    interactive
 elif [ "$search_pattern" == "." ]; then
-    relative_interactive
+    list_mk_relative "$(current_name)" "$(current)"
+    interactive
+elif [ -n "$(echo "$search_pattern" | grep '^\.' | grep '\.$')" ]; then
+    pattern_mk_absolute
+    list_mk_relative "$(echo "$search_pattern" | sed 's|\.$||')" "$(current)"
+    interactive
 elif [ -n "$(echo "$search_pattern" | grep '^\.')" ]; then
-    relative_pattern
+    pattern_mk_absolute
+    absolute_pattern
+elif [ -n "$(echo "$search_pattern" | grep '\.$')" ]; then
+    list_mk_relative "$(echo "$search_pattern" | sed 's|\.$||')"
+    interactive
 else
     absolute_pattern
 fi
