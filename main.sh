@@ -23,7 +23,9 @@ case "$1" in
 	if [ -n "$XIOXIDE_OUTPUT" ]; then
 	    $1 "$XIOXIDE_OUTPUT"
 	else
-	    [ "$6" == "--no-passthrough" ] && return 1 || "$1" "$5"
+	    if [ "$6" != "--no-passthrough" ]; then
+		[ -z "$5" ] && $1 || $1 "$5"
+            fi
 	fi
 	;;
 esac

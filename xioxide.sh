@@ -5,6 +5,9 @@
 [ -n "$3" ] && config_stem="$3" || config_stem="default"
 search_pattern="$4"
 
+[ "$search_pattern" == ".." ] && exit
+[ -z "$search_pattern" ] && exit
+
 eval "filter() { cat | "$filter_cmd"; }"
 eval "current() { "$current_cmd"; }"
 config_path="$XDG_CONFIG_HOME/xioxide/$config_stem.parsed"
@@ -25,7 +28,7 @@ current_name() {
     [ -z "$ret" ] && exit || echo "$ret"
 }
 
-absolute_pattern() {
+match_pattern() {
     echo "$item_list" | greps "^$search_pattern " | head -n 1 | awk '{ print $2 }'
 }
 
@@ -34,34 +37,38 @@ pattern_mk_absolute() {
 }
 
 interactive() {
-    echo "$item_list" | sed "s|/home/$(whoami)|~|" |fzf | awk '{ print $2 }'
+    echo "$item_list" | fzf | awk '{ print $2 }'
 }
 
 list_mk_relative() {
-    if [ -z "$2" ]; then
-        item_list="$(echo "$item_list" | greps "^$1")"
-    else
-        item_list="$(echo "$item_list" | greps "^$1" | sed "s|$2/||")"
-    fi
+    item_list="$(echo "$item_list" | greps "^$1")"
 }
 
-[ "$search_pattern" == ".." ] && exit
+list_mk_relative_current() {
+    list_mk_relative "$(current_name)"
+}
+
+list_mk_relative_pattern() {
+    list_mk_relative "$(echo "$search_pattern" | sed 's|\.$||')"
+}
 
 if [ -z "$search_pattern" ]; then
+    exit
+elif [ "$search_pattern" == "*" ]; then
     interactive
 elif [ "$search_pattern" == "." ]; then
-    list_mk_relative "$(current_name)" "$(current)"
+    list_mk_relative_current
     interactive
 elif [ -n "$(echo "$search_pattern" | grep '^\.' | grep '\.$')" ]; then
     pattern_mk_absolute
-    list_mk_relative "$(echo "$search_pattern" | sed 's|\.$||')" "$(current)"
+    list_mk_relative_pattern
     interactive
 elif [ -n "$(echo "$search_pattern" | grep '^\.')" ]; then
     pattern_mk_absolute
-    absolute_pattern
+    match_pattern
 elif [ -n "$(echo "$search_pattern" | grep '\.$')" ]; then
-    list_mk_relative "$(echo "$search_pattern" | sed 's|\.$||')"
+    list_mk_relative_pattern
     interactive
 else
-    absolute_pattern
+    match_pattern
 fi

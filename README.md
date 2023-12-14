@@ -112,6 +112,9 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
    Note:
    - If you are using `xioxide` as a cd replacement, and your `<current_cmd>` (third arg) is `pwd`, relative patterns won't seem to work right in the home directory. This is because `pwd` prints `/home/username` while you might use `~` in your config, and they won't match. To fix this, you can use `sed 's|~|/home/username|'` in your filtering command.
 
+   Interactive complete pattern:
+   If the pattern ends with `.` `xioxide` will find all of the items that have a name starting with the rest of the pattern, and give an `fzf` menu for you to choose one. Basically, if you remember what a item's name started with, but don't remember the full thing, just put a dot at the end and select the item from a menu. If the pattern both starts and ends with `.` `xioxide` will replace the first dot with the name of the current item (as outlined in the relative pattern section). From there it will give you the autocomplete menu.
+
    Else:
    If `xioxide` was not able to find a match for the pattern at all, then it just passes the search pattern straight to the processing command defined in the first arg. If you do not want this behavior, pass --no-pasthrough as your 6th argument.
 
@@ -119,3 +122,15 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
    If you pass `''` (empty string) or `.` as your search pattern, `xioxide` will run in interactive mode. In this mode it will filter your config, and allow you to select which item to use with `fzf`. If you pass just `.`, in addition to filtering the config according to `<filter_cmd>` `xioxide` will only include items that match the current item, as defined by `<current_cmd>` in the fzf menu.
 
 vim:ft=markdown
+
+# roadmap
+
+  Just features I plan to eventually implement
+
+## going upwards in item tree
+
+   for example if we are currently on item `abc ~/alpha/bet/c`, we can use the search pattern `..d` to refer to the item `abd` and `...e` to refer to `ae` would just be a nice qol improvement
+
+## better installation instructions
+
+   currently they aren't very descriptive
