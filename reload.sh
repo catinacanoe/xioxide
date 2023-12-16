@@ -36,11 +36,12 @@ while IFS= read -r line; do
     local_name="$(echo "$line" | awk '{ print $1 }')"
     local_value="$(echo "$line" | awk '{ print $2 }')"
 
-    name="$(echo "$name" | head -c "$indent_count")$local_name"
+    name="$(echo "$name" | head -n "$indent_count" && echo "$local_name")"
     value="$(echo "$value" | head -n "$indent_count" && echo "$local_value")"
     value_concat="$(echo "$value" | tr -d '\n')"
+    name_concat="$(echo "$name" | tr -d '\n')"
 
-    echo "$indent_count | $name | $local_value"
+    echo "$indent_count | $name_concat | $local_value"
 
-    echo "$name $value_concat" >> "$outfile"
+    echo "$name_concat $value_concat" >> "$outfile"
 done <<< "$config"

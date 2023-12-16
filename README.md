@@ -134,3 +134,6 @@ vim:ft=markdown
 ## better installation instructions
 
    currently they aren't very descriptive
+
+## add aliases
+   so that commonly accesed items can be sed replaced in
