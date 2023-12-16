@@ -5,7 +5,7 @@
 [ -n "$3" ] && config_stem="$3" || config_stem="default"
 search_pattern="$4"
 
-[ "$search_pattern" == ".." ] && exit
+[[ "$search_pattern" == *".."* ]] && exit
 [ -z "$search_pattern" ] && exit
 
 eval "filter() { cat | "$filter_cmd"; }"
