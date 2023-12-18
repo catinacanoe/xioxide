@@ -19,12 +19,13 @@ case "$1" in
 
     *)
 	XIOXIDE_OUTPUT="$("$XIOXIDE_PATH/xioxide.sh" "$2" "$3" "$4" "$5")"
+	[ -z "$1" ] && XIOXIDE_RUNNER="echo" || XIOXIDE_RUNNER="$1"
 
 	if [ -n "$XIOXIDE_OUTPUT" ]; then
-	    $1 "$XIOXIDE_OUTPUT"
+	    $XIOXIDE_RUNNER "$XIOXIDE_OUTPUT"
 	else
 	    if [ "$6" != "--no-passthrough" ]; then
-		[ -z "$5" ] && $1 || $1 "$5"
+		[ -z "$5" ] && $XIOXIDE_RUNNER || $XIOXIDE_RUNNER "$5"
             fi
 	fi
 	;;
