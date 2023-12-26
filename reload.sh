@@ -39,7 +39,7 @@ while IFS= read -r line; do
     name="$(echo "$name" | head -n "$indent_count" && echo "$local_name")"
     value="$(echo "$value" | head -n "$indent_count" && echo "$local_value")"
     value_concat="$(echo "$value" | tr -d '\n')"
-    name_concat="$(echo "$name" | tr -d '\n')"
+    name_concat="$(echo -n "$name" | tr '\n' '_')"
 
     echo "$indent_count | $name_concat | $local_value"
 

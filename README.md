@@ -1,3 +1,4 @@
+vim:ft=markdown
 [https://github.com/catinacanoe/xioxide](https://github.com/catinacanoe/xioxide)
 `xioxide`, a `cd` wrapper script written by canoe, but it's extensible. In the sense that you can use it to organize and access any data that is naturally organized in a tree.
 Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
@@ -102,34 +103,27 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 ## search pattern
 
    This section describes how the search pattern is parsed and used to select final output.
-   
-   Absolute pattern:
-   If the pattern does not start with `.` `xioxide` will just search through the list of filtered items, and use the first match (passing it to the command specified in the first argument)
 
-   Relative pattern:
-   If the pattern starts with `.` `xioxide` will determine the current item using the command in your third argument. Then, it will try to find an item in the filtered list that matches the output of the command (can be partial match from right side ie `ca` matches `cat` but `at` doesn't match `cat`). If it finds a match, it will take the name of the first matching item (as defined in conf), append the rest of your search pattern (whatever was after the '.'), and search the filtered list using the newly generated search pattern (same behaviour as an absolute pattern). If it does not find a match (current item is not defined in config) it will exit with an error.
-   Example: you have defined `m /mnt/` and `mz /mnt/0/` in your config file, and are currently in the `/mnt/` directory. If you run `xioxide cd '' pwd '' .z` (the two empty strings mean: not filtering, using default config) `xioxide` will run `pwd` and get `/mnt` as output. Then it will look through your config and see that the first matching item is `m`, then it will apped `z` and get `mz`. The behaviour from here is the same as if you ran `xioxide` with `mz` as the search pattern and not `.z`, so `xioxide` will cd into /mnt/0/.
+   Predots:
+   If the pattern contains dot characters (`.`) at the beginning, these are called predots. They signify the current item (like `cd ./dir`). If there is only one dot, `xioxide` will essentially just replace it with the current item's name. So, if there is an item `abc ~/alpha/bet/c/` and that is the current directory, the search pattern `.d` is equivalent to `abcd`. If there are multiple dots, `xioxide` starts going up the item tree (like `cd ../other`). So, in the same scenario, the pattern `..z` is the same as `abz`, and `...e` is equivalent to `ae`. However, `....a` would not be valid, as there is no item with the name `''`. In this case xioxide will just pass the string through to the runner command.
+
+   Letters:
+   Outlined previously, the letters in the string are the main part of the search pattern. So, however the predots narrowed down our search, `xioxide` will just look through the item list and find all of the items whose names begin with the provided letters.
+
+   Postdots:
+   This is what we call the dot(s) at the end of the string (if there are multiple, the behaviour is the same as if there was just one). If there are no postdots, `xioxide` just uses the item at the top of the narrowed down list (most likely the one that matched our predots and letters perfectly). If there are postdots, `xioxide` allows the user to select the item to use from the narrowed down list using `fzf`.
+   
+   Example: you have defined `m /mnt/` and `mz /mnt/0/` in your config file, and are currently in the `/mnt/` directory. If you run `xioxide cd '' pwd '' .z` (the two empty strings mean: not filtering, using default config) `xioxide` will run `pwd` and get `/mnt` as output. Then it will look through your config and see that the first matching item is `m`, then it will append `z` and get `mz`. The behaviour from here is the same as if you ran `xioxide` with `mz` as the search pattern and not `.z`, so `xioxide` will cd into /mnt/0/.
+
    Note:
    - If you are using `xioxide` as a cd replacement, and your `<current_cmd>` (third arg) is `pwd`, relative patterns won't seem to work right in the home directory. This is because `pwd` prints `/home/username` while you might use `~` in your config, and they won't match. To fix this, you can use `sed 's|~|/home/username|'` in your filtering command.
-
-   Interactive complete pattern:
-   If the pattern ends with `.` `xioxide` will find all of the items that have a name starting with the rest of the pattern, and give an `fzf` menu for you to choose one. Basically, if you remember what a item's name started with, but don't remember the full thing, just put a dot at the end and select the item from a menu. If the pattern both starts and ends with `.` `xioxide` will replace the first dot with the name of the current item (as outlined in the relative pattern section). From there it will give you the autocomplete menu.
 
    Else:
    If `xioxide` was not able to find a match for the pattern at all, then it just passes the search pattern straight to the processing command defined in the first arg. If you do not want this behavior, pass --no-pasthrough as your 6th argument.
 
-   Interactive:
-   If you pass `''` (empty string) or `.` as your search pattern, `xioxide` will run in interactive mode. In this mode it will filter your config, and allow you to select which item to use with `fzf`. If you pass just `.`, in addition to filtering the config according to `<filter_cmd>` `xioxide` will only include items that match the current item, as defined by `<current_cmd>` in the fzf menu.
-
-vim:ft=markdown
-
 # roadmap
 
   Just features I plan to eventually implement
-
-## going upwards in item tree
-
-   for example if we are currently on item `abc ~/alpha/bet/c`, we can use the search pattern `..d` to refer to the item `abd` and `...e` to refer to `ae` would just be a nice qol improvement
 
 ## better installation instructions
 
