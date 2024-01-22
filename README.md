@@ -97,13 +97,16 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 
    3. The command to get the currently open item (used for relative patterns, see [search patterns section](#search-pattern)). If you are using `xioxide` as a `cd` replacement, this should probably be `pwd`. Defaults to `echo` if left empty.
 
-   4. The stem name of the configuration file to use (defaults to `default` if left empty). So if you want to use the configuration `$XDG_CONFIG_HOME/xioxide/my.conf`, pass `my` as this argument.
+   4. The stem name of the configuration file to use (defaults to `default` if left empty). So if you want to use the configuration `$XDG_CONFIG_HOME/xioxide/my.conf`, pass `my` as this argument. (Also affects the sed filter file used, see [search patterns section](#search-pattern))
 
    5. The search pattern to search through the filtered list and select final output. More on the search pattern and how it is parsed [later](#search-pattern)
 
 ## search pattern
 
    This section describes how the search pattern is parsed and used to select final output.
+
+   Sed Filter:
+   `xioxide` provides a convenient option where you can modify the search string before it is processed. Next to your config files in `$XDG_CONFIG_HOME/xioxide/<<stem name>>.sed` you can put a sed script that will be run on the search string before anything else happens. If you do not create this file, nothing will happen. This is useful if you have some items that you access frequently but they have a long prefix, you can use this to 'alias' them.
 
    Predots:
    If the pattern contains dot characters (`.`) at the beginning, these are called predots. They signify the current item (like `cd ./dir`). If there is only one dot, `xioxide` will essentially just replace it with the current item's name. So, if there is an item `abc ~/alpha/bet/c/` and that is the current directory, the search pattern `.d` is equivalent to `abcd`. If there are multiple dots, `xioxide` starts going up the item tree (like `cd ../other`). So, in the same scenario, the pattern `..z` is the same as `abz`, and `...e` is equivalent to `ae`. However, `....a` would not be valid, as there is no item with the name `''`. In this case xioxide will just pass the string through to the runner command.

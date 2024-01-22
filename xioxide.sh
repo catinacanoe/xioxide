@@ -10,11 +10,12 @@ search_pattern="$4"
 eval "filter() { cat | "$filter_cmd"; }"
 eval "fn_current() { "$current_cmd"; }"
 config_path="$XDG_CONFIG_HOME/xioxide/$config_stem.parsed"
+sed_path="$XDG_CONFIG_HOME/xioxide/$config_stem.sed"
 
 [ -f "$config_path" ] || exit 1
+[ -f "$sed_path" ] && search_pattern="$(echo "$search_pattern" | sed -f "$sed_path")"
 
 item_list="$(cat "$config_path" | filter)"
-
 # separate out search pattern (and handle ".")
 if [ "$search_pattern" == "." ]; then
     predots=""
@@ -25,8 +26,8 @@ elif [ "$search_pattern" == ".." ]; then
     letters=""
     postdot="."
 else
-    predots="$(echo "$search_pattern" | sed 's|[^.].*$||')" # "..." -> "..."
-    letters="$(echo "$search_pattern" | sed 's|\.||g')" # "..." -> ""
+    predots="$(echo "$search_pattern" | sed 's|[^.].*$||')"   # "..." -> "..."
+    letters="$(echo "$search_pattern" | sed 's|\.||g')"       # "..." -> ""
     postdot="$(echo "$search_pattern" | sed 's|^\.*[^.]*||')" # "..." -> ""
 fi
 
@@ -37,9 +38,9 @@ if [ -n "$predots" ]; then
     [ -z "$current_name" ] && current_name="$(echo "$item_list" | grep " $current_item" | head -n 1 | awk '{ print $1 }')"
     [ -z "$current_name" ] && exit
 
-    for (( i=1; i<${#predots}; i++ )); do
-	[ -z "$(echo "$current_name" | grep '_')" ] && exit # we are trying to go above the xioxide tree
-	current_name="$(echo "$current_name" | sed 's|_[^_]*$||')" # a '_' and then any non '_' chars at the $end
+    for ((i = 1; i < ${#predots}; i++)); do
+        [ -z "$(echo "$current_name" | grep '_')" ] && exit        # we are trying to go above the xioxide tree
+        current_name="$(echo "$current_name" | sed 's|_[^_]*$||')" # a '_' and then any non '_' chars at the $end
     done
 
     item_list="$(echo "$item_list" | grep "^$current_name" | sed "s|^$current_name||")"
@@ -59,7 +60,7 @@ item_list="$(echo "$item_list" | sed ':a;s|^\([a-z]*\)_|\1|;ta')"
 
 # handle postdot(s?)
 if [ -n "$postdot" ]; then
-     echo "$item_list" | fzf | sed 's|^[^ ]* ||'
+    echo "$item_list" | fzf | sed 's|^[^ ]* ||'
 else
-     echo "$item_list" | head -n 1 | sed 's|^[^ ]* ||'
+    echo "$item_list" | head -n 1 | sed 's|^[^ ]* ||'
 fi
