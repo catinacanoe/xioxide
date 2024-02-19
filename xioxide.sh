@@ -26,26 +26,32 @@ elif [ "$search_pattern" == ".." ]; then
     letters=""
     postdot="."
 else
-    predots="$(echo "$search_pattern" | sed 's|[^.].*$||')"   # "..." -> "..."
-    letters="$(echo "$search_pattern" | sed 's|\.||g')"       # "..." -> ""
-    postdot="$(echo "$search_pattern" | sed 's|^\.*[^.]*||')" # "..." -> ""
+    predots="$(echo "$search_pattern" | sed 's|[^.].*$||')"   # "..." -> "..." (deletes to eol once it hits a non-'.' character)
+    letters="$(echo "$search_pattern" | sed 's|\.||g')"       # "..." -> "" (removes all dots)
+    postdot="$(echo "$search_pattern" | sed 's|^\.*[^.]*||')" # "..." -> "" (if there are dots at start, deletes them, and then delets any non-'.' letters after that)
 fi
 
 # handle predots
-if [ -n "$predots" ]; then
-    current_item="$(fn_current | sed -e 's|\.|\\\.|g' -e 's|\^|\\\^|g' -e 's|\$|\\\$|g')"
-    current_name="$(echo "$item_list" | grep " $current_item$" | head -n 1 | awk '{ print $1 }')"
-    [ -z "$current_name" ] && current_name="$(echo "$item_list" | grep " $current_item" | head -n 1 | awk '{ print $1 }')"
-    [ -z "$current_name" ] && exit
+current_item="$(fn_current | sed -e 's|\.|\\\.|g' -e 's|\^|\\\^|g' -e 's|\$|\\\$|g')" # this just takes the current item and applies escape sequences (for matching with grep)
+current_name="$(echo "$item_list" | grep " $current_item$" | head -n 1 | awk '{ print $1 }')"
+[ -z "$current_name" ] && current_name="$(echo "$item_list" | grep " $current_item" | head -n 1 | awk '{ print $1 }')"
+[ -z "$current_name" ] && exit
+# the above just tries its best to find a xioxide item that best matches the current_item
 
+if [ -z "$predots" ]; then
+    item_list="$(echo "$item_list" | grep "^$current_name" | sed "s|^$current_name||")" # basically just makes the item_list relative to current_name
+elif [ "$predots" == "." ]; then
+    true
+else
     for ((i = 1; i < ${#predots}; i++)); do
-        [ -z "$(echo "$current_name" | grep '_')" ] && exit        # we are trying to go above the xioxide tree
-        current_name="$(echo "$current_name" | sed 's|_[^_]*$||')" # a '_' and then any non '_' chars at the $end
+        echo "$current_name" | grep -q '_' || exit # if we run out of underscores, this means the amount of dots user entered implies going above the tree
+        current_name="$(echo "$current_name" | sed 's|_[^_]*$||')" # essentially deletes the lowest level specifier (from 'a_b_c' remove '_c')
     done
 
-    item_list="$(echo "$item_list" | grep "^$current_name" | sed "s|^$current_name||")"
-    [ -z "$item_list" ] && exit # no matches (shouldn't really happen)
+    item_list="$(echo "$item_list" | grep "^$current_name" | sed "s|^$current_name||")" # basically just makes the item_list relative to current_name
 fi
+
+[ -z "$item_list" ] && exit # in case no matches (shouldn't really happen)
 
 # :a means add a mark (like a goto)
 # \( ... \) is a capture group

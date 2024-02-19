@@ -110,6 +110,11 @@ Inspired by `zoxide` [https://github.com/ajeetdsouza/zoxide](https://github.com/
 
    Predots:
    If the pattern contains dot characters (`.`) at the beginning, these are called predots. They signify the current item (like `cd ./dir`). If there is only one dot, `xioxide` will essentially just replace it with the current item's name. So, if there is an item `abc ~/alpha/bet/c/` and that is the current directory, the search pattern `.d` is equivalent to `abcd`. If there are multiple dots, `xioxide` starts going up the item tree (like `cd ../other`). So, in the same scenario, the pattern `..z` is the same as `abz`, and `...e` is equivalent to `ae`. However, `....a` would not be valid, as there is no item with the name `''`. In this case xioxide will just pass the string through to the runner command.
+   IMPORTANT NOTE: recently the behavior has been switched so that one pre-dot does what none did previously, and no predots do what one did previously. Basically, now `xioxide` will always operate relative to the current item, unless specifically told not to using a *single* pre-dot. This can be reverted using the sed preprocessor functionality. Put this in your `config.sed` file:
+   ```
+   s/^\([^.]\)/.\1/
+   s/^\.\([^.]\)/\1/
+   ```
 
    Letters:
    Outlined previously, the letters in the string are the main part of the search pattern. So, however the predots narrowed down our search, `xioxide` will just look through the item list and find all of the items whose names begin with the provided letters.
