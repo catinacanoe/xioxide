@@ -3,17 +3,18 @@
 # argument defaults and setup ...
 [ -n "$1" ] && filter_cmd="$1" || filter_cmd="cat"
 [ -n "$2" ] && current_cmd="$2" || current_cmd="echo"
-[ -n "$3" ] && config_stem="$3" || config_stem="default"
-search_pattern="$4"
+[ -n "$3" ] && default_cmd="$3" || default_cmd="echo"
+[ -n "$4" ] && config_stem="$4" || config_stem="default"
+search_pattern="$5"
 [ -z "$search_pattern" ] && exit
 
 eval "filter() { cat | "$filter_cmd"; }"
 eval "fn_current() { "$current_cmd"; }"
+eval "default_item() { "$default_cmd"; }"
 config_path="$XDG_CONFIG_HOME/xioxide/$config_stem.parsed"
 sed_path="$XDG_CONFIG_HOME/xioxide/$config_stem.sed"
 
 [ -f "$config_path" ] || exit 1
-[ -f "$sed_path" ] && search_pattern="$(echo "$search_pattern" | sed -f "$sed_path")"
 
 item_list="$(cat "$config_path" | filter)"
 # separate out search pattern (and handle ".")
@@ -38,10 +39,10 @@ current_name="$(echo "$item_list" | grep " $current_item$" | head -n 1 | awk '{ 
 [ -z "$current_name" ] && exit
 # the above just tries its best to find a xioxide item that best matches the current_item
 
-if [ -z "$predots" ]; then
+if [ "$predots" == "." ] || default_item "$current_item"; then
+    [ -f "$sed_path" ] && letters="$(echo "$letters" | sed -f "$sed_path")"
+elif [ -z "$predots" ]; then
     item_list="$(echo "$item_list" | grep "^$current_name" | sed "s|^$current_name||")" # basically just makes the item_list relative to current_name
-elif [ "$predots" == "." ]; then
-    true
 else
     for ((i = 1; i < ${#predots}; i++)); do
         echo "$current_name" | grep -q '_' || exit # if we run out of underscores, this means the amount of dots user entered implies going above the tree
