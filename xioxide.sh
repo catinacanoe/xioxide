@@ -63,8 +63,8 @@ item_list="$(echo "$item_list" | sed ':a;s|^\([a-z]*\)_|\1|;ta')"
 
 # handle letters
 [ -n "$letters" ] && final_item_list="$(
-    echo "$item_list" | grep "^$letters " | sed "s|^$letters||"
-    echo "$item_list" | grep "^$letters"'[^ ]' | sed "s|^$letters||"
+    echo "$item_list" | grep "^$letters"'[ _]' | sed "s|^$letters||"
+    echo "$item_list" | grep "^$letters"'[^ _]' | sed "s|^$letters||"
 )"
 [ -z "$final_item_list" ] && exit
 
