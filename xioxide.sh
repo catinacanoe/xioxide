@@ -62,12 +62,15 @@ item_list="$(echo "$item_list" | sed ':a;s|^\([a-z]*\)_|\1|;ta')"
 # remove the underscores from the names of all of the items
 
 # handle letters
-[ -n "$letters" ] && item_list="$(echo "$item_list" | grep "^$letters" | sed "s|^$letters||")"
-[ -z "$item_list" ] && exit
+[ -n "$letters" ] && final_item_list="$(
+    echo "$item_list" | grep "^$letters " | sed "s|^$letters||"
+    echo "$item_list" | grep "^$letters"'[^ ]' | sed "s|^$letters||"
+)"
+[ -z "$final_item_list" ] && exit
 
 # handle postdot(s?)
 if [ -n "$postdot" ]; then
-    echo "$item_list" | fzf | sed 's|^[^ ]* ||'
+    echo "$final_item_list" | fzf | sed 's|^[^ ]* ||'
 else
-    echo "$item_list" | head -n 1 | sed 's|^[^ ]* ||'
+    echo "$final_item_list" | head -n 1 | sed 's|^[^ ]* ||'
 fi
